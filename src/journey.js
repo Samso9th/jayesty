@@ -33,22 +33,27 @@ document.querySelector('#app').innerHTML=`
 <div class="family"><p class="eyebrow">WITH THE BLESSING OF OUR FAMILIES</p><p>The family of Late Mr Gabriel Omale and Mrs Stella Omale <br>and the family of Late Mr Paschal Ogbonna and Mrs Dorothy Ogbonna <br>joyfully invite you to the holy matrimony of their children.</p></div>
 <details class="gifts"><summary><span>A gift for our new beginning</span>${icon("plus")}</summary><p>Your presence is the greatest gift. If you would also like to support us, our account details are below. Thank you.</p><div class="accounts"><button data-copy="3092484145"><small>FIRST BANK · OGBONNA CHIDIEBERE</small><b>3092484145</b><span>${icon("copy")}Copy</span></button><button data-copy="2069786826"><small>UBA · OMALE ESTHER O.</small><b>2069786826</b><span>${icon("copy")}Copy</span></button></div></details>
 <footer><h2>Until forever.</h2><p>JAYESTY 26 · A LOVE STORY WRITTEN BY GRACE</p><button data-jump="0"><span>Experience it again</span>${icon("up")}</button></footer></section></main>
-<nav class="chapter-dots" aria-label="Story chapters">${chapters.map((x,i)=>`<button data-jump="${i/6+.075}" aria-label="${x}" title="${x}"></button>`).join('')}</nav><button class="sound" aria-label="Pause theme song" aria-pressed="true"><span class="sound-bars"><i></i><i></i><i></i><i></i></span><span class="sound-label">SOUND ON</span></button><div class="progress-track"><div></div></div><audio src="/assets/wedding-song.mp3" loop autoplay preload="auto"></audio><div class="toast" role="status"></div>`;
+<nav class="chapter-dots" aria-label="Story chapters">${chapters.map((x,i)=>`<button data-jump="${i/6+.075}" aria-label="${x}" title="${x}"></button>`).join('')}</nav><button class="sound" aria-label="Pause theme song" aria-pressed="true"><span class="sound-bars"><i></i><i></i><i></i><i></i></span><span class="sound-label">SOUND ON</span></button><div class="progress-track"><div></div></div><audio src="/assets/wedding-song.mp3" loop autoplay preload="auto"></audio><div class="toast" role="status"></div><div class="welcome" hidden><div class="welcome-card"><p class="eyebrow">ESTHER & JOHNMARK</p><h2>Our story,<br><i>with music.</i></h2><p>Tap to open the invitation and let the song play.</p><button class="welcome-enter"><span class="sound-bars"><i></i><i></i><i></i><i></i></span><span>Enter with sound</span></button><button class="welcome-quiet">Continue without sound</button></div></div>`;
 const audio=document.querySelector('audio');
 const sound=document.querySelector('.sound');
-function audioState(){sound.setAttribute('aria-pressed',String(!audio.paused));sound.setAttribute('aria-label',audio.paused?'Play theme song':'Pause theme song');sound.querySelector('.sound-label').textContent=audio.paused?'SOUND OFF':'SOUND ON';}
 let soundWanted=true;
-sound.onclick=async()=>{if(audio.paused){soundWanted=true;try{await audio.play();}catch{}}else{soundWanted=false;audio.pause();}audioState();};
+function audioState(){const playing=!audio.paused;sound.setAttribute('aria-pressed',String(playing));sound.setAttribute('aria-label',playing?'Pause theme song':'Play theme song');sound.querySelector('.sound-label').textContent=playing?'SOUND ON':soundWanted?'TAP FOR SOUND':'SOUND OFF';sound.classList.toggle('blocked',!playing&&soundWanted);}
 audio.addEventListener('play',audioState);audio.addEventListener('pause',audioState);
-const startSound=async()=>{if(!soundWanted||!audio.paused)return;try{await audio.play();}catch{}};
-startSound();
+const startSound=async()=>{if(!soundWanted||!audio.paused)return;try{await audio.play();}catch{}audioState();};
+sound.onclick=async()=>{if(audio.paused){soundWanted=true;await startSound();}else{soundWanted=false;audio.pause();}};
+const welcome=document.querySelector('.welcome');
+const closeWelcome=()=>{welcome.classList.add('leaving');setTimeout(()=>{welcome.hidden=true;},260);};
+startSound().then(()=>{if(audio.paused&&soundWanted){welcome.hidden=false;requestAnimationFrame(()=>welcome.classList.add('open'));}});
+welcome.querySelector('.welcome-enter').onclick=async()=>{soundWanted=true;await startSound();closeWelcome();};
+welcome.querySelector('.welcome-quiet').onclick=()=>{soundWanted=false;audioState();closeWelcome();};
 const gestures=['pointerdown','touchend','keydown','wheel'];
-const onFirstGesture=()=>{startSound().then(()=>{if(!audio.paused)gestures.forEach(g=>removeEventListener(g,onFirstGesture));});};
+const onFirstGesture=e=>{if(sound.contains(e.target))return;startSound().then(()=>{if(!audio.paused)gestures.forEach(g=>removeEventListener(g,onFirstGesture));});};
 gestures.forEach(g=>addEventListener(g,onFirstGesture,{passive:true}));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)startSound();});
+audioState();
 function jump(p){const y=p>=1?document.querySelector('#celebration').offsetTop:(document.querySelector('.journey').offsetHeight-innerHeight)*p;window.scrollTo({top:y,behavior:reduced?'instant':'smooth'});}
 document.querySelectorAll('[data-jump]').forEach(b=>b.onclick=()=>jump(Number(b.dataset.jump)));
-document.querySelector('.enter').onclick=async()=>{document.querySelector('.opening').classList.add('opened');await startSound();;gsap.delayedCall(reduced?.1:.8,()=>jump(.23));};
+document.querySelector('.enter').onclick=async()=>{document.querySelector('.opening').classList.add('opened');await startSound();gsap.delayedCall(reduced?.1:.8,()=>jump(.23));};
 document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText(b.dataset.copy);const t=document.querySelector('.toast');t.textContent='Account number copied';t.classList.add('visible');setTimeout(()=>t.classList.remove('visible'),2200);}catch{}});
 let progress=0;let targetProgress=0;
 const panels=[...document.querySelectorAll('.chapter')];
