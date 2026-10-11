@@ -47,7 +47,7 @@ startSound().then(()=>{if(audio.paused&&soundWanted){welcome.hidden=false;reques
 welcome.querySelector('.welcome-enter').onclick=async()=>{soundWanted=true;await startSound();closeWelcome();};
 welcome.querySelector('.welcome-quiet').onclick=()=>{soundWanted=false;audioState();closeWelcome();};
 const gestures=['pointerdown','touchend','keydown','wheel'];
-const onFirstGesture=e=>{if(sound.contains(e.target))return;startSound().then(()=>{if(!audio.paused)gestures.forEach(g=>removeEventListener(g,onFirstGesture));});};
+const onFirstGesture=e=>{if(sound.contains(e.target)||welcome.contains(e.target))return;startSound().then(()=>{if(!audio.paused)gestures.forEach(g=>removeEventListener(g,onFirstGesture));});};
 gestures.forEach(g=>addEventListener(g,onFirstGesture,{passive:true}));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)startSound();});
 audioState();
