@@ -1,4 +1,4 @@
-# JayEsty 26 — an invitation in motion
+# JayEsty 26: an invitation in motion
 
 A continuous scroll-driven wedding story for Esther and Johnmark, 30 October 2026, Abuja.
 
